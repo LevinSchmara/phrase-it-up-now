@@ -52,10 +52,28 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   const createGame = (name: string) => {
+    // Create a player for the creator
+    const creatorId = `player_${Date.now().toString(36)}`;
+    const creatorName = "You"; // Default name for the creator
+    
+    const newPlayer: Player = {
+      id: creatorId,
+      name: creatorName,
+      score: 0,
+      currentWord: null,
+      difficulty: 'medium',
+      hasDetected: [],
+      wordsAssigned: {
+        easy: 0,
+        medium: 0,
+        hard: 0
+      }
+    };
+    
     const newGame: GameSession = {
       id: `game_${Date.now().toString(36)}`,
       name,
-      players: [],
+      players: [newPlayer], // Add the creator as the first player
       isActive: true,
       inLobby: true,
       startTime: Date.now(),
@@ -70,6 +88,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setGameSession(newGame);
+    setCurrentPlayer(newPlayer); // Set the current player as the creator
     setGamePhase('lobby');
     toast({
       title: "Game Created",
