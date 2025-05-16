@@ -4,9 +4,11 @@ import { useGame } from '@/contexts/GameContext';
 import CurrentWord from './CurrentWord';
 import PlayerList from './PlayerList';
 import GameInfo from './GameInfo';
+import GameLobby from './GameLobby';
+import Leaderboard from './Leaderboard';
 
 const GameInterface: React.FC = () => {
-  const { gameSession, displayMode } = useGame();
+  const { gameSession, displayMode, gamePhase } = useGame();
   
   if (!gameSession) {
     return null;
@@ -19,10 +21,14 @@ const GameInterface: React.FC = () => {
   return (
     <div className={containerClasses}>
       <GameInfo />
-      <div className="divide-y divide-gray-100 dark:divide-gray-800">
-        <CurrentWord />
-        <PlayerList />
-      </div>
+      {gamePhase === 'lobby' && <GameLobby />}
+      {gamePhase === 'playing' && (
+        <div className="divide-y divide-gray-100 dark:divide-gray-800">
+          <CurrentWord />
+          <PlayerList />
+        </div>
+      )}
+      {gamePhase === 'leaderboard' && <Leaderboard />}
     </div>
   );
 };

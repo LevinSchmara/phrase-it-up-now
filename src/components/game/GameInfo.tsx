@@ -4,9 +4,18 @@ import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Award, Layers } from 'lucide-react';
 
 const GameInfo: React.FC = () => {
-  const { gameSession, leaveGame, toggleDisplayMode, displayMode } = useGame();
+  const { 
+    gameSession, 
+    leaveGame, 
+    toggleDisplayMode, 
+    displayMode,
+    gamePhase,
+    showLeaderboard,
+    returnToLobby
+  } = useGame();
   
   if (!gameSession) {
     return null;
@@ -38,25 +47,73 @@ const GameInfo: React.FC = () => {
         <p className="text-sm">
           Game ID: <span className="font-mono text-xs bg-muted p-1 rounded">{gameSession.id}</span>
         </p>
-        <p className="text-xs text-muted-foreground mt-2">
-          Share this code with others so they can join your game!
-        </p>
+        {gamePhase === 'lobby' && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Waiting for players to join the game...
+          </p>
+        )}
+        {gamePhase === 'playing' && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Listen carefully and click when you hear someone's word!
+          </p>
+        )}
       </CardContent>
       <CardFooter className="flex justify-between pt-2">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={toggleDisplayMode}
-        >
-          {displayMode === 'overlay' ? 'Switch to Window' : 'Switch to Overlay'}
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={leaveGame}
-        >
-          Leave Game
-        </Button>
+        {gamePhase === 'playing' ? (
+          <>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={showLeaderboard}
+              className="flex items-center gap-1"
+            >
+              <Award size={16} />
+              Leaderboard
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={toggleDisplayMode}
+            >
+              <Layers size={16} className="mr-1" />
+              {displayMode === 'overlay' ? 'Window' : 'Overlay'}
+            </Button>
+          </>
+        ) : gamePhase === 'leaderboard' ? (
+          <>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={returnToLobby}
+            >
+              Back to Lobby
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={leaveGame}
+            >
+              Leave Game
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={toggleDisplayMode}
+            >
+              {displayMode === 'overlay' ? 'Switch to Window' : 'Switch to Overlay'}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={leaveGame}
+            >
+              Leave Game
+            </Button>
+          </>
+        )}
       </CardFooter>
     </Card>
   );

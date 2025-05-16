@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Difficulty, GameSession, Player, WordBank } from '@/types/game';
+import { Difficulty, GameSession, Player, WordBank, GamePhase } from '@/types/game';
 import { useToast } from '@/components/ui/use-toast';
 
 interface GameContextType {
@@ -8,6 +8,7 @@ interface GameContextType {
   currentPlayer: Player | null;
   displayMode: 'overlay' | 'window';
   words: WordBank;
+  gamePhase: GamePhase;
   createGame: (name: string) => void;
   joinGame: (gameId: string, playerName: string) => void;
   leaveGame: () => void;
@@ -16,6 +17,9 @@ interface GameContextType {
   detectWord: (playerId: string) => void;
   getPlayerWord: () => string | null;
   toggleDisplayMode: () => void;
+  startGame: () => void;
+  showLeaderboard: () => void;
+  returnToLobby: () => void;
 }
 
 // Sample word bank for demonstration
@@ -44,6 +48,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
   const [displayMode, setDisplayMode] = useState<'overlay' | 'window'>('overlay');
   const [words, setWords] = useState<WordBank>(sampleWords);
+  const [gamePhase, setGamePhase] = useState<GamePhase>('lobby');
   const { toast } = useToast();
 
   const createGame = (name: string) => {
@@ -52,11 +57,20 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       name,
       players: [],
       isActive: true,
+      inLobby: true,
       startTime: Date.now(),
-      endTime: null
+      endTime: null,
+      gameSettings: {
+        wordsPerCategory: {
+          easy: 1,
+          medium: 1,
+          hard: 1
+        }
+      }
     };
 
     setGameSession(newGame);
+    setGamePhase('lobby');
     toast({
       title: "Game Created",
       description: `Game "${name}" has been created successfully!`
@@ -79,7 +93,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       score: 0,
       currentWord: null,
       difficulty: 'medium',
-      hasDetected: []
+      hasDetected: [],
+      wordsAssigned: {
+        easy: 0,
+        medium: 0,
+        hard: 0
+      }
     };
 
     setCurrentPlayer(newPlayer);
@@ -138,7 +157,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setCurrentPlayer(prev => {
       if (!prev) return null;
-      return { ...prev, currentWord: newWord };
+      const updatedWordsAssigned = { ...prev.wordsAssigned };
+      updatedWordsAssigned[currentPlayer.difficulty]++;
+      
+      return { 
+        ...prev, 
+        currentWord: newWord,
+        wordsAssigned: updatedWordsAssigned 
+      };
     });
 
     toast({
@@ -162,11 +188,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ...prev,
         players: prev.players.map(p => {
           if (p.id === playerId) {
-            const hasDetected = [...p.hasDetected, currentPlayer.id];
             return {
               ...p,
               score: p.score + 1,
-              hasDetected
+              hasDetected: [...p.hasDetected, currentPlayer.id]
             };
           }
           return p;
@@ -192,12 +217,84 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const startGame = () => {
+    if (!gameSession) return;
+
+    // Assign initial words based on game settings
+    setGameSession(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        inLobby: false
+      };
+    });
+
+    // Assign words to all players based on the game settings
+    if (gameSession.players.length > 0) {
+      // In a real implementation, this would be done on the server
+      const updatedPlayers = gameSession.players.map(player => {
+        return {
+          ...player,
+          currentWord: getRandomWord(player.difficulty)
+        };
+      });
+
+      setGameSession(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          players: updatedPlayers
+        };
+      });
+
+      // Update current player's word if they are in the game
+      if (currentPlayer) {
+        const newWord = getRandomWord(currentPlayer.difficulty);
+        setCurrentPlayer(prev => {
+          if (!prev) return null;
+          return { ...prev, currentWord: newWord };
+        });
+
+        toast({
+          title: "Game Started!",
+          description: `Your word is: "${newWord}"`,
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "Game Started!",
+          description: "The game has begun.",
+        });
+      }
+    }
+
+    setGamePhase('playing');
+  };
+
+  const showLeaderboard = () => {
+    setGamePhase('leaderboard');
+  };
+
+  const returnToLobby = () => {
+    setGamePhase('lobby');
+    if (gameSession) {
+      setGameSession(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          inLobby: true
+        };
+      });
+    }
+  };
+
   return (
     <GameContext.Provider value={{
       gameSession,
       currentPlayer,
       displayMode,
       words,
+      gamePhase,
       createGame,
       joinGame,
       leaveGame,
@@ -205,7 +302,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       assignWord,
       detectWord,
       getPlayerWord,
-      toggleDisplayMode
+      toggleDisplayMode,
+      startGame,
+      showLeaderboard,
+      returnToLobby
     }}>
       {children}
     </GameContext.Provider>

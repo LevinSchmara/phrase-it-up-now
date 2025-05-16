@@ -7,7 +7,12 @@ export interface Player {
   score: number;
   currentWord: string | null;
   difficulty: Difficulty;
-  hasDetected: boolean[];
+  hasDetected: string[]; // Changed from boolean[] to string[] to store player IDs
+  wordsAssigned: {
+    easy: number;
+    medium: number;
+    hard: number;
+  };
 }
 
 export interface GameSession {
@@ -15,8 +20,16 @@ export interface GameSession {
   name: string;
   players: Player[];
   isActive: boolean;
+  inLobby: boolean; // Add this flag to track lobby state
   startTime: number;
   endTime: number | null;
+  gameSettings: {
+    wordsPerCategory: {
+      easy: number;
+      medium: number;
+      hard: number;
+    };
+  };
 }
 
 export interface WordBank {
@@ -24,3 +37,5 @@ export interface WordBank {
   medium: string[];
   hard: string[];
 }
+
+export type GamePhase = 'lobby' | 'playing' | 'leaderboard';
