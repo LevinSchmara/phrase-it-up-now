@@ -70,14 +70,6 @@ const GameInfo: React.FC = () => {
               <Award size={16} />
               Leaderboard
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={toggleDisplayMode}
-            >
-              <Layers size={16} className="mr-1" />
-              {displayMode === 'overlay' ? 'Window' : 'Overlay'}
-            </Button>
           </>
         ) : gamePhase === 'leaderboard' ? (
           <>
@@ -98,13 +90,6 @@ const GameInfo: React.FC = () => {
           </>
         ) : (
           <>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={toggleDisplayMode}
-            >
-              {displayMode === 'overlay' ? 'Switch to Window' : 'Switch to Overlay'}
-            </Button>
             <Button 
               variant="ghost" 
               size="sm"

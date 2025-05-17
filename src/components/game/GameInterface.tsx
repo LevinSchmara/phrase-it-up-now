@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useGame } from '@/contexts/GameContext';
 import CurrentWord from './CurrentWord';
@@ -14,9 +13,9 @@ const GameInterface: React.FC = () => {
     return null;
   }
 
-  const containerClasses = displayMode === 'overlay' 
-    ? 'fixed bottom-4 right-4 w-80 bg-black/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-700 overflow-hidden z-50 animate-slide-in-right'
-    : 'w-full max-w-md mx-auto bg-black/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-700 overflow-hidden animate-fade-in';
+  const containerClasses = gamePhase === 'lobby' || gamePhase === 'playing' || displayMode === 'window'
+    ? 'w-full max-w-md mx-auto bg-black/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-700 overflow-hidden animate-fade-in'
+    : 'fixed bottom-4 right-4 w-80 bg-black/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-700 overflow-hidden z-50 animate-slide-in-right';
   
   return (
     <div className={containerClasses}>
