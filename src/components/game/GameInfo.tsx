@@ -6,7 +6,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Award, Layers } from 'lucide-react';
 
-const GameInfo: React.FC = () => {
+interface GameInfoProps {
+  className?: string;
+}
+
+const GameInfo: React.FC<GameInfoProps> = ({ className = '' }) => {
   const { 
     gameSession, 
     leaveGame, 
@@ -29,7 +33,7 @@ const GameInfo: React.FC = () => {
   };
 
   return (
-    <Card className="mb-4 animate-fade-in">
+    <Card className={`mb-4 animate-fade-in ${className}`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <CardTitle>
